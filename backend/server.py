@@ -459,8 +459,14 @@ async def get_dashboard_stats():
     ]
     crime_by_state = await db.crime_data.aggregate(pipeline).to_list(length=None)
     
-    # Recent activity
-    recent_crimes = await db.crime_data.find().sort("timestamp", -1).limit(10).to_list(length=None)
+    # Recent activity - clean up ObjectId fields
+    recent_crimes_raw = await db.crime_data.find().sort("timestamp", -1).limit(10).to_list(length=None)
+    recent_crimes = []
+    for crime in recent_crimes_raw:
+        # Remove MongoDB _id field to avoid ObjectId serialization issues
+        if '_id' in crime:
+            del crime['_id']
+        recent_crimes.append(crime)
     
     return {
         "total_crimes": total_crimes,
