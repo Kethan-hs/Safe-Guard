@@ -600,20 +600,58 @@ function App() {
           </TabsContent>
 
           <TabsContent value="safety" className="space-y-6">
-            {userLocation ? (
-              <SafetyRecommendations 
-                analysis={safetyAnalysis} 
-                prediction={crimePrediction} 
-              />
+            {loading ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <h3 className="text-lg font-semibold mb-2">Analyzing Location Safety</h3>
+                  <p className="text-gray-600">
+                    Please wait while we analyze crime patterns and generate safety recommendations for your location...
+                  </p>
+                </CardContent>
+              </Card>
+            ) : userLocation && (safetyAnalysis || crimePrediction) ? (
+              <div className="space-y-4">
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="py-3">
+                    <div className="flex items-center gap-2 text-blue-800">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Analysis for: {userLocation.lat.toFixed(4)}°, {userLocation.lng.toFixed(4)}°
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+                <SafetyRecommendations 
+                  analysis={safetyAnalysis} 
+                  prediction={crimePrediction} 
+                />
+              </div>
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
                   <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Select a Location</h3>
+                  <h3 className="text-lg font-semibold mb-2">Get Location-Based Safety Analysis</h3>
                   <p className="text-gray-600 mb-4">
-                    Choose a location on the map or use your current location to get safety analysis and recommendations.
+                    Choose a location to get comprehensive safety analysis and AI-powered crime predictions.
                   </p>
-                  <Button onClick={() => setActiveTab("map")}>Go to Map</Button>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={getCurrentLocation} 
+                      disabled={loading}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Use My Current Location
+                    </Button>
+                    <p className="text-sm text-gray-500">or</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveTab("map")}
+                    >
+                      Click on Map to Select Location
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
