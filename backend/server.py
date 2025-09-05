@@ -75,30 +75,70 @@ class CrimePrediction(BaseModel):
     confidence: float
     factors: Dict[str, float]
 
-# Sample Indian states and cities data
-INDIAN_LOCATIONS = {
-    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad"],
-    "Delhi": ["New Delhi", "Central Delhi", "South Delhi", "North Delhi"],
-    "Karnataka": ["Bangalore", "Mysore", "Hubli", "Mangalore"],
-    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"],
-    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol"],
-    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot"],
-    "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota"],
-    "Uttar Pradesh": ["Lucknow", "Kanpur", "Agra", "Varanasi", "Allahabad"]
+# Real Indian cities from the dataset with their coordinates and state mapping
+CITY_COORDINATES = {
+    "Mumbai": {"lat": 19.0760, "lng": 72.8777, "state": "Maharashtra"},
+    "Delhi": {"lat": 28.7041, "lng": 77.1025, "state": "Delhi"},
+    "Bangalore": {"lat": 12.9716, "lng": 77.5946, "state": "Karnataka"},
+    "Chennai": {"lat": 13.0827, "lng": 80.2707, "state": "Tamil Nadu"},
+    "Kolkata": {"lat": 22.5726, "lng": 88.3639, "state": "West Bengal"},
+    "Ahmedabad": {"lat": 23.0225, "lng": 72.5714, "state": "Gujarat"},
+    "Jaipur": {"lat": 26.9124, "lng": 75.7873, "state": "Rajasthan"},
+    "Lucknow": {"lat": 26.8467, "lng": 80.9462, "state": "Uttar Pradesh"},
+    "Pune": {"lat": 18.5204, "lng": 73.8567, "state": "Maharashtra"},
+    "Hyderabad": {"lat": 17.3850, "lng": 78.4867, "state": "Telangana"},
+    "Surat": {"lat": 21.1702, "lng": 72.8311, "state": "Gujarat"},
+    "Kanpur": {"lat": 26.4499, "lng": 80.3319, "state": "Uttar Pradesh"},
+    "Nagpur": {"lat": 21.1458, "lng": 79.0882, "state": "Maharashtra"},
+    "Indore": {"lat": 22.7196, "lng": 75.8577, "state": "Madhya Pradesh"},
+    "Agra": {"lat": 27.1767, "lng": 78.0081, "state": "Uttar Pradesh"},
+    "Nashik": {"lat": 19.9975, "lng": 73.7898, "state": "Maharashtra"},
+    "Faridabad": {"lat": 28.4089, "lng": 77.3178, "state": "Haryana"},
+    "Meerut": {"lat": 28.9845, "lng": 77.7064, "state": "Uttar Pradesh"},
+    "Rajkot": {"lat": 22.3039, "lng": 70.8022, "state": "Gujarat"},
+    "Kalyan": {"lat": 19.2437, "lng": 73.1355, "state": "Maharashtra"},
+    "Vasai": {"lat": 19.4036, "lng": 72.8062, "state": "Maharashtra"},
+    "Varanasi": {"lat": 25.3176, "lng": 82.9739, "state": "Uttar Pradesh"},
+    "Srinagar": {"lat": 34.0837, "lng": 74.7973, "state": "Jammu and Kashmir"},
+    "Ludhiana": {"lat": 30.9010, "lng": 75.8573, "state": "Punjab"},
+    "Thane": {"lat": 19.2183, "lng": 72.9781, "state": "Maharashtra"},
+    "Visakhapatnam": {"lat": 17.6868, "lng": 83.2185, "state": "Andhra Pradesh"},
+    "Bhopal": {"lat": 23.2599, "lng": 77.4126, "state": "Madhya Pradesh"},
+    "Patna": {"lat": 25.5941, "lng": 85.1376, "state": "Bihar"},
+    "Ghaziabad": {"lat": 28.6692, "lng": 77.4538, "state": "Uttar Pradesh"}
 }
 
-# Crime types with severity mappings
+# Generate state-wise city mapping from coordinates
+INDIAN_LOCATIONS = {}
+for city, data in CITY_COORDINATES.items():
+    state = data["state"]
+    if state not in INDIAN_LOCATIONS:
+        INDIAN_LOCATIONS[state] = []
+    INDIAN_LOCATIONS[state].append(city)
+
+# Real crime types from the dataset with severity mappings
 CRIME_TYPES = {
-    "theft": {"base_severity": 4, "description": "Property theft incidents"},
-    "assault": {"base_severity": 6, "description": "Physical assault cases"},
-    "burglary": {"base_severity": 5, "description": "Breaking and entering"},
-    "robbery": {"base_severity": 7, "description": "Violent theft incidents"},
-    "fraud": {"base_severity": 4, "description": "Financial fraud cases"},
-    "vandalism": {"base_severity": 3, "description": "Property damage"},
-    "drug_related": {"base_severity": 5, "description": "Drug-related offenses"},
-    "domestic_violence": {"base_severity": 8, "description": "Domestic violence cases"},
-    "cybercrime": {"base_severity": 5, "description": "Online criminal activities"},
-    "traffic_violation": {"base_severity": 2, "description": "Traffic related incidents"}
+    "ARSON": {"base_severity": 7, "description": "Fire-related criminal acts"},
+    "ASSAULT": {"base_severity": 6, "description": "Physical assault cases"},
+    "BURGLARY": {"base_severity": 5, "description": "Breaking and entering"},
+    "COUNTERFEITING": {"base_severity": 4, "description": "Fake document/currency creation"},
+    "CYBERCRIME": {"base_severity": 5, "description": "Online criminal activities"},
+    "DOMESTIC VIOLENCE": {"base_severity": 8, "description": "Domestic violence cases"},
+    "DRUG OFFENSE": {"base_severity": 6, "description": "Drug-related offenses"},
+    "EXTORTION": {"base_severity": 7, "description": "Extortion and blackmail"},
+    "FIREARM OFFENSE": {"base_severity": 8, "description": "Illegal firearm activities"},
+    "FRAUD": {"base_severity": 4, "description": "Financial fraud cases"},
+    "HOMICIDE": {"base_severity": 10, "description": "Murder and manslaughter"},
+    "IDENTITY THEFT": {"base_severity": 5, "description": "Identity theft crimes"},
+    "ILLEGAL POSSESSION": {"base_severity": 4, "description": "Illegal possession of items"},
+    "KIDNAPPING": {"base_severity": 9, "description": "Kidnapping and abduction"},
+    "PUBLIC INTOXICATION": {"base_severity": 2, "description": "Public intoxication"},
+    "ROBBERY": {"base_severity": 7, "description": "Violent theft incidents"},
+    "SEXUAL ASSAULT": {"base_severity": 9, "description": "Sexual assault cases"},
+    "SHOPLIFTING": {"base_severity": 3, "description": "Retail theft"},
+    "TRAFFIC VIOLATION": {"base_severity": 2, "description": "Traffic related incidents"},
+    "VANDALISM": {"base_severity": 3, "description": "Property damage"},
+    "VEHICLE - STOLEN": {"base_severity": 5, "description": "Vehicle theft"}
 }
 
 # Initialize sample crime data
