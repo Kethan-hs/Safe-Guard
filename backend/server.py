@@ -141,6 +141,99 @@ CRIME_TYPES = {
     "VEHICLE - STOLEN": {"base_severity": 5, "description": "Vehicle theft"}
 }
 
+# Initialize real crime data from CSV
+async def initialize_real_crime_data():
+    """Load and initialize real crime data from the uploaded CSV"""
+    existing_count = await db.crime_data.count_documents({})
+    if existing_count > 0:
+        logger.info(f"Crime data already loaded: {existing_count} records")
+        return
+    
+    try:
+        import pandas as pd
+        
+        # Load the real crime dataset
+        df = pd.read_csv('/app/crime_dataset_india.csv')
+        logger.info(f"Loading {len(df)} crime records from real dataset...")
+        
+        crimes_to_insert = []
+        processed_count = 0
+        
+        for index, row in df.iterrows():
+            try:
+                city = row['City']
+                
+                # Get coordinates for the city
+                if city not in CITY_COORDINATES:
+                    continue  # Skip cities not in our coordinate mapping
+                
+                city_data = CITY_COORDINATES[city]
+                
+                # Add some randomness to coordinates to spread crimes within city
+                lat_offset = np.random.uniform(-0.05, 0.05)
+                lng_offset = np.random.uniform(-0.05, 0.05)
+                
+                # Parse crime type and map to our severity system
+                crime_description = row['Crime Description']
+                if crime_description not in CRIME_TYPES:
+                    continue  # Skip unknown crime types
+                
+                base_severity = CRIME_TYPES[crime_description]["base_severity"]
+                severity = max(1, min(10, base_severity + np.random.randint(-1, 2)))
+                
+                # Parse date
+                try:
+                    date_str = row['Date of Occurrence']
+                    # Handle different date formats
+                    if '/' in date_str:
+                        parsed_date = pd.to_datetime(date_str, format='%m-%d-%Y %H:%M')
+                    else:
+                        parsed_date = pd.to_datetime(date_str)
+                    
+                    # Convert to timezone-aware datetime
+                    timestamp = parsed_date.tz_localize('UTC') if parsed_date.tz is None else parsed_date
+                except:
+                    # If date parsing fails, use current time
+                    timestamp = datetime.now(timezone.utc)
+                
+                # Create crime data object
+                crime_data = CrimeData(
+                    location={
+                        "lat": city_data["lat"] + lat_offset,
+                        "lng": city_data["lng"] + lng_offset
+                    },
+                    crime_type=crime_description,
+                    severity=severity,
+                    state=city_data["state"],
+                    city=city,
+                    description=f"{crime_description} incident in {city} (Report #{row.get('Report Number', 'N/A')})",
+                    timestamp=timestamp
+                )
+                
+                crimes_to_insert.append(crime_data.dict())
+                processed_count += 1
+                
+                # Insert in batches of 1000 for better performance
+                if len(crimes_to_insert) >= 1000:
+                    await db.crime_data.insert_many(crimes_to_insert)
+                    crimes_to_insert = []
+                    logger.info(f"Inserted batch: {processed_count} records processed")
+                
+            except Exception as e:
+                logger.warning(f"Error processing row {index}: {str(e)}")
+                continue
+        
+        # Insert remaining records
+        if crimes_to_insert:
+            await db.crime_data.insert_many(crimes_to_insert)
+        
+        logger.info(f"Successfully loaded {processed_count} real crime records from dataset")
+        
+    except Exception as e:
+        logger.error(f"Error loading real crime data: {str(e)}")
+        # Fall back to sample data if real data loading fails
+        await initialize_sample_data()
+
 # Initialize sample crime data
 async def initialize_sample_data():
     """Initialize sample crime data for demonstration"""
