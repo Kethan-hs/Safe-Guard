@@ -589,10 +589,23 @@ function App() {
                   safetyAnalysis={safetyAnalysis}
                 />
                 {userLocation && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      📍 Selected Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-800">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        📍 Current Location: {userLocation.lat.toFixed(4)}°, {userLocation.lng.toFixed(4)}°
+                      </span>
+                    </div>
+                    <p className="text-xs text-green-600 mt-1">
+                      Safety analysis completed. Switch to Safety Analysis tab to view detailed recommendations.
                     </p>
+                    <Button 
+                      size="sm" 
+                      className="mt-2 text-xs bg-green-600 hover:bg-green-700"
+                      onClick={() => setActiveTab('safety')}
+                    >
+                      View Safety Analysis
+                    </Button>
                   </div>
                 )}
               </CardContent>
