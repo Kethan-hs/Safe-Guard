@@ -539,7 +539,11 @@ function App() {
                 <p className="text-sm text-gray-600">AI-Powered Crime Pattern Prediction System</p>
               </div>
             </div>
-            <Button onClick={getCurrentLocation} disabled={loading} className="flex items-center gap-2">
+            <Button 
+              onClick={getCurrentLocation} 
+              disabled={loading} 
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+            >
               <MapPin className="h-4 w-4" />
               {loading ? 'Getting Location...' : 'Get My Location'}
             </Button>
