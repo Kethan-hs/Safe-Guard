@@ -482,6 +482,8 @@ async def analyze_location_safety(location_request: LocationRequest):
             crime_date = crime["timestamp"]
             if isinstance(crime_date, str):
                 crime_date = datetime.fromisoformat(crime_date.replace('Z', '+00:00'))
+            elif isinstance(crime_date, datetime) and crime_date.tzinfo is None:
+                crime_date = crime_date.replace(tzinfo=timezone.utc)
             days_ago = (datetime.now(timezone.utc) - crime_date).days
             time_weight = max(0.1, 1 - (days_ago / 30))
             
