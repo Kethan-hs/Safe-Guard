@@ -448,6 +448,7 @@ function App() {
   const analyzeLocationSafety = async (location) => {
     try {
       setLoading(true);
+      console.log('Analyzing location safety for:', location);
       
       const [safetyRes, predictionRes] = await Promise.all([
         axios.post(`${API}/safety-analysis`, {
@@ -461,13 +462,24 @@ function App() {
         })
       ]);
       
+      console.log('Safety analysis completed:', safetyRes.data);
+      console.log('Crime prediction completed:', predictionRes.data);
+      
       setSafetyAnalysis(safetyRes.data);
       setCrimePrediction(predictionRes.data);
       
+      setLoading(false);
+      
     } catch (error) {
       console.error('Error analyzing location safety:', error);
-    } finally {
       setLoading(false);
+      
+      // Show user-friendly error message
+      alert('Unable to analyze location safety at this time. Please try again or select a different location.');
+      
+      // Clear any existing analysis
+      setSafetyAnalysis(null);
+      setCrimePrediction(null);
     }
   };
 
