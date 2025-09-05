@@ -234,7 +234,7 @@ async def initialize_real_crime_data():
         # Fall back to sample data if real data loading fails
         await initialize_sample_data()
 
-# Initialize sample crime data
+# Initialize sample crime data (fallback)
 async def initialize_sample_data():
     """Initialize sample crime data for demonstration"""
     existing_count = await db.crime_data.count_documents({})
