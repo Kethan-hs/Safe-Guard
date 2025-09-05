@@ -632,8 +632,8 @@ async def startup_event():
     global crime_model, scaler
     logger.info("Starting Safe Guard API...")
     
-    # Initialize sample data
-    await initialize_sample_data()
+    # Initialize real crime data from CSV
+    await initialize_real_crime_data()
     
     # Train ML model
     crime_model, scaler = train_simple_crime_model()
