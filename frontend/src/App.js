@@ -377,29 +377,72 @@ function App() {
     }
   };
 
-  const getCurrentLocation = () => {
+  const getCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by this browser.');
+      alert('Geolocation is not supported by this browser. Please click on the map to select a location.');
       return;
     }
 
     setLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        setUserLocation(location);
-        analyzeLocationSafety(location);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        alert('Unable to retrieve your location. Please try clicking on the map instead.');
-        setLoading(false);
+    
+    try {
+      // Show loading state immediately
+      console.log('Getting user location...');
+      
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000 // 5 minutes
+          }
+        );
+      });
+
+      const location = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      
+      console.log('Location obtained:', location);
+      setUserLocation(location);
+      
+      // Analyze location safety
+      await analyzeLocationSafety(location);
+      
+      // Automatically switch to Safety Analysis tab to show results
+      setActiveTab('safety');
+      
+      setLoading(false);
+      
+      // Show success message
+      console.log('Location analysis completed successfully');
+      
+    } catch (error) {
+      console.error('Error getting location:', error);
+      setLoading(false);
+      
+      let errorMessage = 'Unable to retrieve your location. ';
+      
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage += 'Please allow location access in your browser settings and try again.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage += 'Location information is unavailable. Please try again.';
+          break;
+        case error.TIMEOUT:
+          errorMessage += 'Location request timed out. Please try again.';
+          break;
+        default:
+          errorMessage += 'Please click on the map to select a location instead.';
+          break;
       }
-    );
+      
+      alert(errorMessage);
+    }
   };
 
   const analyzeLocationSafety = async (location) => {
